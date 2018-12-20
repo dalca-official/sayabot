@@ -7,12 +7,26 @@ import * as env from '@/Config/Constant.json'
 import { Config } from '@/Config'
 import { Console } from '@/Tools'
 
-import { ICluster } from '&types/App'
+import { IBroadcast, ICluster, IWorker } from '&types/App'
 
 const coreLog = Console('[Core]')
 const shardLog = Console('[Shard]')
 const NODE_VERSION = process.versions.node
 const NUM_WORKERS = cpus().length
+const workers: IWorker = {}
+
+const closeCluster = (): void => {
+  coreLog.log('Master stopped.')
+
+  broadcast({ cmd: 'shutdown' })
+}
+
+const broadcast = ({ cmd, data }: IBroadcast) => {
+  // tslint:disable-next-line:forin
+  for (const pid in workers) {
+    workers[pid].send({ cmd, data })
+  }
+}
 
 Cluster.setupMaster({
   execArgv: ['-r', 'tsconfig-paths/register', '-r', 'ts-node/register'],
@@ -20,7 +34,7 @@ Cluster.setupMaster({
 })
 
 // Start Sayabot
-coreLog.log('Start.')
+coreLog.log(`Start ${process.pid}`)
 
 coreLog.log(`${env.botName} v${pkg.version}`)
 coreLog.log(`The minimum supported Node.js version is ${env.minSuppportNodeVersion}`)
@@ -48,27 +62,25 @@ const clusters = env.useCluster ? NUM_WORKERS : 1
 for (let clusterId = 0; clusterId < clusters; clusterId++) {
   const WORKER_ENV = { SHARD_ID: clusterId, SHARDS_COUNT: clusters }
 
-  Cluster.fork(WORKER_ENV)
+  const worker = Cluster.fork(WORKER_ENV)
+  workers[worker.process.pid] = worker
 }
 
 // Bind events for the shards
-// prettier-ignore
-Cluster
-  .on('online', (worker: ICluster) => {
-    shardLog.log(`Cluster ${worker.process.pid} has started.`)
-  })
-  .on('exit', (worker: ICluster) => {
-    shardLog.error(`Cluster ${worker.process.pid} died.`)
-  })
+Cluster.on('online', (worker: ICluster) => {
+  shardLog.log(`Cluster ${worker.process.pid} has started.`)
+})
+Cluster.on('exit', (worker: ICluster) => {
+  shardLog.error(`Cluster ${worker.process.pid} died.`)
+})
 
 // Bind events for the master
-// prettier-ignore
-process
-  .on('unhandledRejection', reason => coreLog.error(`Unhandled rejection: ${reason}`))
-  .once('SIGINT', () => {
-    coreLog.error('Recevied SIGINT')
-    process.exit(0)
-  })
+process.on('unhandledRejection', reason => coreLog.error(`Unhandled rejection: ${reason}`))
+process.on('SIGTERM', closeCluster)
+process.on('SIGINT', closeCluster)
+process.on('message', ({ cmd }: IBroadcast) => {
+  // Done
+})
 
 // Clearfix
 
@@ -82,6 +94,7 @@ import { Config } from '@/Config'
 import { Console, Measure } from '@/Tools'
 
 import { IConfig } from '&types/App'
+import { IBroadcast } from 'Sayabot/src/@types/App';
 
 export default class App {
   private static readonly bot = new Discord.Client()

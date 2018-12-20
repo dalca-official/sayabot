@@ -1,3 +1,4 @@
+import * as Discord from 'discord.js'
 import * as Cluster from 'cluster'
 import { ChildProcess } from 'child_process'
 
@@ -16,6 +17,19 @@ interface IChildProcess extends ChildProcess {
 
 export interface ICluster extends Cluster.Worker {
   process: IChildProcess
+}
+
+export interface IWorker {
+  [key: string]: Cluster.Worker
+}
+
+export interface IBroadcast {
+  cmd: string
+  data?: any
+}
+
+export interface IDiscordInstance extends Discord.Client {
+  commands?: Discord.Collection<string, string>
 }
 
 type ActivityType = 'PLAYING' | 'STREAMING' | 'LISTENING' | 'WATCHING'

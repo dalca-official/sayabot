@@ -17,7 +17,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
-    "strictNullChecks": true,
+    "strictNullChecks": false,
     "baseUrl": "./src",
     "paths": {
       "*": ["../*"],
