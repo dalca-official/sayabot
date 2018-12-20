@@ -1,0 +1,26 @@
+# LOG
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# RUNTIME DATA
+pids
+*.pid
+*.pid.lock
+*.seed
+
+# Dependency directories
+node_modules
+
+# Optional npm cache directory
+.npm
+
+# Output of 'npm pack' or 'yarn pack'
+*.tgz
+
+# Config
+src/Config/Config.json
+src/Config/development.env
+src/Config/production.env

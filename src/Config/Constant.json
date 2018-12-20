@@ -1,0 +1,5 @@
+{
+  "botName": "Sayabot",
+  "minSuppportNodeVersion": "10",
+  "useCluster": false
+}

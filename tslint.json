@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "tslint:latest",
+    "tslint-config-standard",
+    "tslint-config-prettier"
+  ],
+  "linterOptions": {
+    "exclude": ["node_modules/**/*.ts"]
+  },
+  "rules": {
+    "await-promise": true,
+    "deprecation": true,
+    "member-ordering": false,
+    "no-console": false,
+    "no-floating-promises": true,
+    "no-angle-bracket-type-assertion": false,
+    "no-implicit-dependencies": false,
+    "no-submodule-imports": false,
+    "no-unnecessary-qualifier": true,
+    "no-unnecessary-type-assertion": true,
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
+    "quotemark": [true, "single"],
+    "semicolon": [false, "never"],
+    "strict-type-predicates": true
+  }
+}
