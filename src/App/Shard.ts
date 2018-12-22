@@ -31,6 +31,7 @@ class Shard {
         })
         this.instance.login(config.token)
         this.instance.commands = new Discord.Collection()
+        this.instance.commandsExcludeAliases = new Discord.Collection()
         this.loadCommand()
         this.bindEvent()
       })
@@ -49,6 +50,20 @@ class Shard {
     })
   }
 
+  private readonly walkSync = (dir: string, fileLikeArray: string[] = []): string[] => {
+    const files = fs.readdirSync(dir)
+
+    files.map(file => {
+      if (fs.statSync(`${dir}/${file}`).isDirectory()) {
+        fileLikeArray = this.walkSync(join(dir, file), fileLikeArray)
+      } else {
+        fileLikeArray.push(join(dir, file))
+      }
+    })
+
+    return fileLikeArray
+  }
+
   private readonly setStatus = (status: Discord.PresenceStatus): void => {
     this.instance.user.setStatus(status)
   }
@@ -58,21 +73,25 @@ class Shard {
   }
 
   private readonly loadCommand = (): void => {
-    const commandFiles = fs
-      .readdirSync(join(`${__dirname}/commands`))
-      .filter(file => file.includes('.Command') && file.endsWith('.ts'))
+    const commandNames: string[] = []
+    const commandDir = join(`${__dirname}/Commands`)
+    const commandFiles = this.walkSync(commandDir).filter(file => file.includes('.Command') && file.endsWith('.ts'))
 
     for (const file of commandFiles) {
-      const command = require(join(`${__dirname}/commands/${file}`)).default
+      const command = require(file).default
 
-      command.aliases.unshift(command.name)
+      this.instance.commandsExcludeAliases.set(command.cmds, command)
+      command.aliases.unshift(command.cmds)
 
-      // Register command
+      // Register command and enable function
       command.aliases.map((cmd: string) => {
         this.instance.commands.set(cmd, command)
-        shardLog.log(`Command ${cmd} loaded.`)
+        commandNames.push(cmd)
       })
     }
+
+    shardLog.log(`Commands Loaded: ${commandNames.join(', ')}`)
+    shardLog.log('Commands are ready.')
   }
 
   private readonly bindEvent = (): void => {
@@ -107,8 +126,18 @@ class Shard {
   }
 
   private readonly readyClient = (): void => {
+    let interval = true
     this.setStatus('online')
-    this.setActivity(config.botActivity)
+
+    setInterval((): void => {
+      if (interval) {
+        this.setActivity(config.botActivity)
+      } else {
+        this.setActivity(`${this.instance.guilds.size} Servers / ${this.instance.users.size} Users`)
+      }
+
+      interval = !interval
+    }, 5000)
 
     // prettier-ignore
     shardLog.log(`Logged in as: ${this.instance.user.tag}, with ${this.instance.users.size} users of ${this.instance.guilds.size} servers.`)
@@ -132,8 +161,8 @@ class Shard {
     try {
       await (<any>this.instance.commands.get(command)).run({ instance: this.instance, message, args })
     } catch (err) {
+      await message.reply('There was an error while try to run that command!')
       shardLog.error(`Could not run that command: ${config.commandPrefix}${command}, because of: ${err}`)
-      message.reply('There was an error while try to run that command!')
     }
   }
 

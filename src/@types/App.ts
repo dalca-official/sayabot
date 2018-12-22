@@ -30,6 +30,7 @@ export interface IBroadcast {
 
 export interface IDiscordInstance extends Discord.Client {
   commands?: Discord.Collection<string, string>
+  commandsExcludeAliases?: Discord.Collection<string, string>
 }
 
 type ActivityType = 'PLAYING' | 'STREAMING' | 'LISTENING' | 'WATCHING'
