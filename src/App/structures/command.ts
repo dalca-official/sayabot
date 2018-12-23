@@ -1,7 +1,10 @@
 // src > App > Structures > Command.ts
-import { IRun } from '&types/Command'
+import { IDiscordInstance } from '&types/App'
 
 export abstract class Command {
+  /** Discord Instance */
+  protected instance: IDiscordInstance
+
   /** Name of this command */
   protected cmds: string
 
@@ -27,5 +30,13 @@ export abstract class Command {
     this.aliases = []
   }
 
-  protected abstract async run({ instance, message, args }: IRun): Promise<void>
+  protected initialise(instance: IDiscordInstance): void {
+    this.instance = instance
+  }
+
+  protected hasPermission(): void {
+    // if (this.ownerOnly)
+  }
+
+  public abstract async run(): Promise<void>
 }

@@ -1,8 +1,8 @@
 // src > App > Commands > Generic > ping.Command.ts
 import { Command } from '@/App/Structures/Command'
-import { IRun, intergralMessageTypes } from '&types/Command'
-
 import { Console } from '@/Tools'
+
+import { intergralMessageTypes } from '&types/Command'
 
 const commandLog = Console('[Command]')
 
@@ -14,14 +14,16 @@ class Ping extends Command {
     this.description = 'Ping? pong!'
   }
 
-  public async run({ instance, message, args }: IRun) {
+  public async run() {
+    const message = <intergralMessageTypes>this.instance.receivedData.get('message')
+
     await message.channel
       .send('Ping?')
       .then((msg: intergralMessageTypes) => {
         const Latency = msg.createdTimestamp - message.createdTimestamp
-        msg.edit(`Pong!\nLatency is ${Latency}ms. API Latency is ${Math.round(instance.ping)}ms.`)
+        msg.edit(`Pong!\nLatency is ${Latency}ms. API Latency is ${Math.round(this.instance.ping)}ms.`)
       })
-      .catch(err => commandLog.error(err))
+      .catch(commandLog.error)
   }
 }
 

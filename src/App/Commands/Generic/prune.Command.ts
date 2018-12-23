@@ -1,8 +1,8 @@
 // src > App > Commands > Generic > say.Command.ts
 import { Command } from '@/App/Structures/Command'
-import { IRun } from '&types/Command'
-
 import { Console } from '@/Tools'
+
+import { intergralMessageTypes } from '&types/Command'
 
 const commandLog = Console('[Command]')
 
@@ -15,7 +15,9 @@ class Prune extends Command {
     this.description = 'Remove some data.'
   }
 
-  public async run({ instance, message, args }: IRun): Promise<void> {
+  public async run(): Promise<void> {
+    const message = <intergralMessageTypes>this.instance.receivedData.get('message')
+    const args = <string[]>this.instance.receivedData.get('args')
     const deleteCounts = Number.parseInt(args[0], 10)
 
     if (isNaN(deleteCounts) || !deleteCounts) {

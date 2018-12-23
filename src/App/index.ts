@@ -12,19 +12,20 @@ import { IBroadcast, ICluster, IWorker } from '&types/App'
 const coreLog = Console('[Core]')
 const shardLog = Console('[Shard]')
 const NODE_VERSION = process.versions.node
+let receivedCounts = 0
 const NUM_WORKERS = cpus().length
 const workers: IWorker = {}
 
 const closeCluster = (): void => {
   coreLog.log('Master stopped.')
 
-  broadcast({ cmd: 'shutdown' })
+  broadcast({ cmd: 'SHUTDOWN' })
 }
 
-const broadcast = ({ cmd, data }: IBroadcast) => {
+const broadcast = async ({ cmd, data }: IBroadcast): Promise<void> => {
   // tslint:disable-next-line:forin
   for (const pid in workers) {
-    workers[pid].send({ cmd, data })
+    await workers[pid].send({ cmd, data })
   }
 }
 
@@ -70,14 +71,32 @@ for (let clusterId = 0; clusterId < clusters; clusterId++) {
 Cluster.on('online', (worker: ICluster) => {
   shardLog.log(`Cluster ${worker.process.pid} has started.`)
 })
-Cluster.on('exit', (worker: ICluster) => {
-  shardLog.error(`Cluster ${worker.process.pid} died.`)
+Cluster.on('exit', (worker: ICluster, exitCode: number) => {
+  if (exitCode === 0) return
+
+  shardLog.error(`Cluster ${worker.process.pid} died. ${exitCode}`)
 })
 
 // Bind events for the master
+process.removeAllListeners('SIGTERM')
+process.removeAllListeners('SIGINT')
 process.on('unhandledRejection', reason => coreLog.error(`Unhandled rejection: ${reason}`))
 process.on('SIGTERM', closeCluster)
 process.on('SIGINT', closeCluster)
 process.on('message', ({ cmd }: IBroadcast) => {
-  // Done
+  coreLog.log(`Received command ${cmd} from cluster`)
+
+  switch (cmd) {
+    case 'DISCONNECTED':
+    case 'FORCE_DISCONNECTED':
+      ++receivedCounts
+
+      if (receivedCounts >= NUM_WORKERS) {
+        coreLog.log('All cluster has closed. Stopping...')
+        process.exit(0)
+      }
+      break
+    default:
+      coreLog.warn(`Unknown command received from cluster. Entire command: ${cmd}`)
+  }
 })

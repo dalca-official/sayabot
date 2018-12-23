@@ -9,6 +9,7 @@ import { Console } from '@/Tools'
 
 import { IDiscordInstance, IDiscordActivity, IBroadcast } from '&types/App'
 import { intergralMessageTypes } from '@/@types/Command'
+import { Command } from '@/App/Structures/Command'
 
 // Set shard process title (shownin 'qs')
 process.title = `${env.botName} v${pkg.version} - ${process.pid}`
@@ -30,6 +31,7 @@ class Shard {
           shardCount: this.shards,
         })
         this.instance.login(config.token)
+        this.instance.receivedData = new Map()
         this.instance.commands = new Discord.Collection()
         this.instance.commandsExcludeAliases = new Discord.Collection()
         this.loadCommand()
@@ -81,6 +83,7 @@ class Shard {
       const command = require(file).default
 
       this.instance.commandsExcludeAliases.set(command.cmds, command)
+      command.initialise(this.instance)
       command.aliases.unshift(command.cmds)
 
       // Register command and enable function
@@ -101,11 +104,11 @@ class Shard {
     this.instance.on('error', shardLog.error)
 
     process.on('unhandledRejection', reason => shardLog.error(`Unhandled rejection: ${reason}`))
+    process.on('SIGTERM', this.shutdown)
+    process.on('SIGINT', this.shutdown)
     process.on('message', ({ cmd }: IBroadcast) => {
-      shardLog.log(`Received command ${cmd} from master`)
-
       switch (cmd) {
-        case 'shutdown':
+        case 'SHUTDOWN':
           this.shutdown()
             .then(() => {
               this.emit({ cmd: 'DISCONNECTED' })
@@ -149,7 +152,7 @@ class Shard {
     // or, Ignore all messages that not start with command prefix
     if (!message.guild || message.author.bot || message.content.indexOf(config.commandPrefix) !== 0) return
 
-    const args = message.content
+    const args = message.cleanContent
       .slice(config.commandPrefix.length)
       .trim()
       .split(/ +/g)
@@ -158,8 +161,12 @@ class Shard {
     // Ignore if there are no applicable commands
     if (!this.instance.commands.has(command)) return
 
+    this.instance.receivedData.set('message', message)
+    this.instance.receivedData.set('args', args)
+
     try {
-      await (<any>this.instance.commands.get(command)).run({ instance: this.instance, message, args })
+      // @ts-ignore
+      await (<Command>this.instance.commands.get(command)).run()
     } catch (err) {
       await message.reply('There was an error while try to run that command!')
       shardLog.error(`Could not run that command: ${config.commandPrefix}${command}, because of: ${err}`)

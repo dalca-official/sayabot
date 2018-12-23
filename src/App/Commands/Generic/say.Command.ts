@@ -1,8 +1,8 @@
 // src > App > Commands > Generic > say.Command.ts
 import { Command } from '@/App/Structures/Command'
-import { IRun } from '&types/Command'
-
 import { Console } from '@/Tools'
+
+import { intergralMessageTypes } from '&types/Command'
 
 const commandLog = Console('[Command]')
 
@@ -15,7 +15,9 @@ class Say extends Command {
     this.description = 'Say some messages from Sayabot.'
   }
 
-  public async run({ instance, message, args }: IRun): Promise<void> {
+  public async run(): Promise<void> {
+    const message = <intergralMessageTypes>this.instance.receivedData.get('message')
+    const args = <string[]>this.instance.receivedData.get('args')
     const sayMessage = args.join(' ')
 
     message.delete().catch(commandLog.error)
