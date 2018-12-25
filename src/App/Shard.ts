@@ -1,3 +1,4 @@
+// src > App > Shard.ts
 import * as fs from 'fs'
 import * as Discord from 'discord.js'
 import { join } from 'path'
@@ -75,7 +76,7 @@ class Shard {
   }
 
   private readonly loadCommand = (): void => {
-    const commandNames: string[] = []
+    const commandNames = []
     const commandDir = join(`${__dirname}/Commands`)
     const commandFiles = this.walkSync(commandDir).filter(file => file.includes('.Command') && file.endsWith('.ts'))
 
@@ -85,11 +86,11 @@ class Shard {
       this.instance.commandsExcludeAliases.set(command.cmds, command)
       command.initialise(this.instance)
       command.aliases.unshift(command.cmds)
+      commandNames.push(command.cmds)
 
       // Register command and enable function
       command.aliases.map((cmd: string) => {
         this.instance.commands.set(cmd, command)
-        commandNames.push(cmd)
       })
     }
 
@@ -100,6 +101,12 @@ class Shard {
   private readonly bindEvent = (): void => {
     this.instance.on('ready', () => this.readyClient())
     this.instance.on('message', (message: intergralMessageTypes) => this.onMessage(message))
+    this.instance.on('guildMemberAdd', member => {
+      shardLog.log(`User ${member.user.username} has joined the server.`)
+
+      const role = member.guild.roles.find('name', 'byNode ( Guest )')
+      member.addRole(role)
+    })
     this.instance.on('warn', shardLog.warn)
     this.instance.on('error', shardLog.error)
 
@@ -147,29 +154,35 @@ class Shard {
   }
 
   private readonly onMessage = async (message: intergralMessageTypes): Promise<void> => {
-    // Ignore all private messages
-    // or, Ignore all message from other bots
+    // Ignore all messages from other bots
     // or, Ignore all messages that not start with command prefix
-    if (!message.guild || message.author.bot || message.content.indexOf(config.commandPrefix) !== 0) return
+    if (message.author.bot || message.content.indexOf(config.commandPrefix) !== 0) {
+      return
+    }
 
-    const args = message.cleanContent
-      .slice(config.commandPrefix.length)
-      .trim()
-      .split(/ +/g)
+    // prettier-ignore
+    const args = message.cleanContent.slice(config.commandPrefix.length).trim().split(/\s+/g)
     const command = args.shift().toLowerCase()
+    const receivedData = { message, args }
 
     // Ignore if there are no applicable commands
-    if (!this.instance.commands.has(command)) return
+    if (!this.instance.commands.has(command)) {
+      shardLog.log(`${message.author.tag} said ${message} but there are no applicable commands. Ignore...`)
+      return
+    }
 
-    this.instance.receivedData.set('message', message)
-    this.instance.receivedData.set('args', args)
+    for (const key of Object.keys(receivedData)) {
+      // @ts-ignore
+      this.instance.receivedData.set(key, receivedData[key])
+    }
 
     try {
-      // @ts-ignore
-      await (<Command>this.instance.commands.get(command)).run()
+      await (<Command>(<any>this.instance.commands.get(command))).run()
     } catch (err) {
-      await message.reply('There was an error while try to run that command!')
-      shardLog.error(`Could not run that command: ${config.commandPrefix}${command}, because of: ${err}`)
+      await message.channel.send('There was an error while try to run that command!')
+      shardLog.error(`The following command cannot be executed, bcz of ${err}`)
+    } finally {
+      shardLog.log(`${message.author.tag} run the full scripts: ${message}`)
     }
   }
 

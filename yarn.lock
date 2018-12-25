@@ -1345,6 +1345,11 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
 
+iso8601-duration@^1.0.0:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/iso8601-duration/-/iso8601-duration-1.1.6.tgz#b393a1afcbc011f48206b439925317807883d81f"
+  integrity sha512-wyVl4tmjZyaoh9GeohL3Dh4DKwr8CgiOL8eFRyRJyk8nopHOhZ0Ql76EwOUvx3OGQeI08xGj8+4AJgyXYs3iJw==
+
 isobject@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-2.1.0.tgz#f065561096a3f1da2ef46272f815c840d87e0c89"
@@ -1625,6 +1630,11 @@ needle@^2.2.1:
     debug "^2.1.2"
     iconv-lite "^0.4.4"
     sax "^1.2.4"
+
+node-fetch@^2.2.1:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.3.0.tgz#1a1d940bbfb916a1d3e0219f037e89e71f8c5fa5"
+  integrity sha512-MOd8pV3fxENbryESLgVIeaGKrdl+uaYhCSSVkjeOb/31/njTpcis5aWfdqgNlHIrKOLRbMnfPINPOML2CIFeXA==
 
 node-opus@^0.3.1:
   version "0.3.1"
@@ -2151,6 +2161,14 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+
+simple-youtube-api@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/simple-youtube-api/-/simple-youtube-api-5.1.1.tgz#6e6d3892f6651c87cd7591d07f8e0259860447b4"
+  integrity sha512-cbWRGTDjWDrC+8LR3gpLaXeRb0+e/eiX/bKYIS0tQ4gBUimhXVhsWWhzWJ49aTBnAA0vChrD3U0ZDL8/CUWNcA==
+  dependencies:
+    iso8601-duration "^1.0.0"
+    node-fetch "^2.2.1"
 
 snapdragon-node@^2.0.1:
   version "2.1.1"

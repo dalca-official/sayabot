@@ -1,4 +1,4 @@
-// src > App > Commands > Generic > say.Command.ts
+// src > App > Commands > Generic > prune.Command.ts
 import { Command } from '@/App/Structures/Command'
 import { Console } from '@/Tools'
 

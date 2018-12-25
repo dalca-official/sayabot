@@ -1,3 +1,4 @@
+// src > App > index.ts
 import * as Cluster from 'cluster'
 import { cpus } from 'os'
 import { join, resolve } from 'path'

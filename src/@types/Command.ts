@@ -1,3 +1,4 @@
+// src > App > @types > Command.ts
 import * as Discord from 'discord.js'
 import { IDiscordInstance } from '&types/App'
 

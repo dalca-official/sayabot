@@ -1,3 +1,4 @@
+// src > App > Tools > Console.ts
 import chalk from 'chalk'
 
 class Console {

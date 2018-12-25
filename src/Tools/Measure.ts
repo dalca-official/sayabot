@@ -1,3 +1,4 @@
+// src > App > Tools > Measure.ts
 import chalk from 'chalk'
 
 import { Console } from '@/Tools'

@@ -1,9 +1,16 @@
 // src > App > Structures > Command.ts
 import { IDiscordInstance } from '&types/App'
+import { intergralMessageTypes } from '&types/Command'
 
 export abstract class Command {
   /** Discord Instance */
   protected instance: IDiscordInstance
+
+  /** Received message */
+  protected message: intergralMessageTypes
+
+  /** Received args */
+  protected args: string[]
 
   /** Name of this command */
   protected cmds: string
@@ -17,6 +24,9 @@ export abstract class Command {
   /** Long description of the command  */
   protected details: string
 
+  /** Usage format string of the command */
+  protected format: string
+
   /** Whether the command only be run in a guild channel */
   protected guildOnly: boolean
 
@@ -26,6 +36,9 @@ export abstract class Command {
   /** Whether the command only be used in NSFW channel */
   protected nsfw: boolean
 
+  /** Whether the command should be hidden from the help command */
+  protected hidden: boolean
+
   protected constructor() {
     this.aliases = []
   }
@@ -34,9 +47,17 @@ export abstract class Command {
     this.instance = instance
   }
 
+  /** Hide this command from the help command */
+  protected hide(): void {
+    this.hidden = true
+  }
+
   protected hasPermission(): void {
     // if (this.ownerOnly)
   }
 
-  public abstract async run(): Promise<void>
+  /** Runs the command */
+  public async run(): Promise<void> {
+    throw new Error(`${this.constructor.name} command does not have a run() method.`)
+  }
 }

@@ -1,3 +1,4 @@
+// src > App > @types > App.ts
 import * as Discord from 'discord.js'
 import * as Cluster from 'cluster'
 import { ChildProcess } from 'child_process'

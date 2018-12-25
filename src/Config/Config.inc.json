@@ -1,5 +1,6 @@
 {
   "token": "your token",
-  "botActivity": "메리, 도와줘",
-  "prefix": "메리, "
+  "botActivity": "Type . for help",
+  "commandPrefix": ".",
+  "youtubeAPI": "AIzaSyC5oLGk91MAImWYCRepW3COW1fKL5ZGtSQ"
 }
