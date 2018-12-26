@@ -12,6 +12,7 @@ class Ping extends Command {
 
     this.cmds = 'ping'
     this.description = 'Ping? pong!'
+    this.group = 'generic'
   }
 
   public async run() {

@@ -2,7 +2,6 @@
 import * as Discord from 'discord.js'
 import * as Cluster from 'cluster'
 import { ChildProcess } from 'child_process'
-import { intergralMessageTypes } from '&types/Command'
 
 export type IConfig = Readonly<{
   path: string
@@ -21,17 +20,8 @@ export interface ICluster extends Cluster.Worker {
   process: IChildProcess
 }
 
-export interface IWorker {
-  [key: string]: Cluster.Worker
-}
-
-export interface IBroadcast {
-  cmd: string
-  data?: any
-}
-
 export interface IDiscordInstance extends Discord.Client {
-  receivedData?: Map<string, intergralMessageTypes | string[]>
+  receivedData?: Map<string, any>
   commands?: Discord.Collection<string, string>
   commandsExcludeAliases?: Discord.Collection<string, string>
 }

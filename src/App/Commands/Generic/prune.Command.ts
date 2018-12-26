@@ -13,6 +13,7 @@ class Prune extends Command {
     this.cmds = 'prune'
     this.aliases = ['del', 'delete', 'remove']
     this.description = 'Remove some data.'
+    this.group = 'generic'
   }
 
   public async run(): Promise<void> {

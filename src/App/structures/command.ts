@@ -27,6 +27,9 @@ export abstract class Command {
   /** Usage format string of the command */
   protected format: string
 
+  /** The group name of the command belongs to */
+  protected group: string
+
   /** Whether the command only be run in a guild channel */
   protected guildOnly: boolean
 

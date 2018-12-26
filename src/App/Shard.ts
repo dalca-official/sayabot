@@ -2,27 +2,30 @@
 import * as fs from 'fs'
 import * as Discord from 'discord.js'
 import { join } from 'path'
+import { EventEmitter } from 'events'
 
 import * as pkg from 'package.json'
 import * as config from '@/Config/Config.json'
 import * as env from '@/Config/Constant.json'
 import { Console } from '@/Tools'
 
-import { IDiscordInstance, IDiscordActivity, IBroadcast } from '&types/App'
-import { intergralMessageTypes } from '@/@types/Command'
+import { IDiscordInstance, IDiscordActivity } from '&types/App'
+import { intergralMessageTypes } from '&types/Command'
 import { Command } from '@/App/Structures/Command'
 
-// Set shard process title (shownin 'qs')
+// Set shard process title (shown in 'qs')
 process.title = `${env.botName} v${pkg.version} - ${process.pid}`
 
 const { SHARD_ID: shardId, SHARDS_COUNT: shardCount } = process.env
-
 const shardLog = Console('[Shard]')
+
+const EventManager = new EventEmitter()
 
 class Shard {
   private readonly shardId = Number.parseInt(<string>shardId, 10)
   private readonly shards = Number.parseInt(<string>shardCount, 10)
   private instance: IDiscordInstance
+  private readonly eventManager: EventEmitter = EventManager
 
   public constructor() {
     this.isExistsShard()
@@ -75,6 +78,16 @@ class Shard {
     this.instance.user.setActivity(activity, options)
   }
 
+  private readonly abbrNum = (num: number, decPlaces: number): string => {
+    // @see https://en.wikipedia.org/wiki/Metric_prefix
+    let strNum = String(num).length
+    decPlaces = Math.pow(10, decPlaces)
+
+    strNum -= strNum % 3
+
+    return Math.round((num * decPlaces) / Math.pow(10, strNum)) / decPlaces + ' kMGTPE'[strNum / 3]
+  }
+
   private readonly loadCommand = (): void => {
     const commandNames = []
     const commandDir = join(`${__dirname}/Commands`)
@@ -107,47 +120,35 @@ class Shard {
       const role = member.guild.roles.find('name', 'byNode ( Guest )')
       member.addRole(role)
     })
+    this.instance.on('guildMemberRemove', () => {
+      /** */
+    })
     this.instance.on('warn', shardLog.warn)
     this.instance.on('error', shardLog.error)
 
-    process.on('unhandledRejection', reason => shardLog.error(`Unhandled rejection: ${reason}`))
-    process.on('SIGTERM', this.shutdown)
-    process.on('SIGINT', this.shutdown)
-    process.on('message', ({ cmd }: IBroadcast) => {
-      switch (cmd) {
-        case 'SHUTDOWN':
-          this.shutdown()
-            .then(() => {
-              this.emit({ cmd: 'DISCONNECTED' })
-              process.exit(0)
-            })
-            .catch(() => {
-              shardLog.error('There was an error while shutdown the Discord Instance')
+    this.eventManager.on('SHUTDOWN', this.shutdown)
 
-              this.emit({ cmd: 'FORCE_DISCONNECTED' })
-              process.exit(0)
-            })
-          break
-        default:
-          shardLog.warn(`Unknown command received from master. Entire comamnd: ${cmd}`)
-          break
-      }
-    })
+    process.on('unhandledRejection', reason => shardLog.error(`Unhandled rejection: ${reason}`))
+    process.on('message', (cmd: string) => this.eventManager.emit(cmd))
   }
 
   private readonly readyClient = (): void => {
-    let interval = true
+    // const botActivty = config.botActivity.replace(/{commandPrefix}/, config.commandPrefix)
     this.setStatus('online')
+    this.setActivity(`${this.abbrNum(this.instance.users.size, 1)} Users`, { url: 'https://sayakie.com', type: 'LISTENING' })
 
+    /*
+    let interval = true
     setInterval((): void => {
       if (interval) {
-        this.setActivity(config.botActivity)
+        this.setActivity(botActivty)
       } else {
         this.setActivity(`${this.instance.guilds.size} Servers / ${this.instance.users.size} Users`)
       }
 
       interval = !interval
     }, 5000)
+    */
 
     // prettier-ignore
     shardLog.log(`Logged in as: ${this.instance.user.tag}, with ${this.instance.users.size} users of ${this.instance.guilds.size} servers.`)
@@ -172,8 +173,7 @@ class Shard {
     }
 
     for (const key of Object.keys(receivedData)) {
-      // @ts-ignore
-      this.instance.receivedData.set(key, receivedData[key])
+      this.instance.receivedData.set(key, (<any>receivedData)[key])
     }
 
     try {
@@ -186,11 +186,12 @@ class Shard {
     }
   }
 
-  private readonly emit = ({ cmd, data }: IBroadcast): void => {
-    process.send({ cmd, data })
+  private readonly send = (cmd: string): void => {
+    process.send(cmd)
   }
 
   private readonly shutdown = async (): Promise<void> => {
+    await this.send('DISCONNECTED')
     await this.instance.destroy()
   }
 }

@@ -16,6 +16,7 @@ class Help extends Command {
     this.cmds = 'help'
     this.aliases = ['h', 'commands', 'cmds']
     this.description = 'Print all helps for Sayabots'
+    this.group = 'generic'
     this.hide()
   }
 

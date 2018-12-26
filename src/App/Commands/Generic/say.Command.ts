@@ -13,6 +13,7 @@ class Say extends Command {
     this.cmds = 'say'
     this.aliases = ['tell', 'talk']
     this.description = 'Say some messages from Sayabot.'
+    this.group = 'generic'
   }
 
   public async run(): Promise<void> {
