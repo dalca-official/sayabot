@@ -27,21 +27,27 @@ class Help extends Command {
     const commandsText: string[] = []
 
     commands.map(cmd => {
-      const command = <any>this.instance.commandsExcludeAliases.get(cmd)
+      const command = <Help>(<unknown>this.instance.commandsExcludeAliases.get(cmd))
+
+      if (command.hidden) {
+        return
+      }
+
       commandsText.push(`**${command.cmds}** - ${command.details ? command.details : command.description}`)
     })
 
     richEmbed.setColor(0x00ae86)
+    richEmbed.setDescription(`**Hello, I'm ${env.botName}!**`)
     richEmbed.addField(
       '\u200B',
-      `**Hello, I'm ${
-        env.botName
-      }!**\n\nBelow you can see all the commands I know\nIf you need further help with something join our Support Server.\nHave a nice day!`,
+      'Below you can see all the commands I know\n' +
+        'If you need further help with something join our Support Server.\n\n' +
+        '**Have a nice day!**',
     )
     richEmbed.addField('scripts', commandsText.join('\n'))
     richEmbed.addField(
       '\u200B',
-      '**Use =help <Category> for more information about a category.**\n**Use =help <Command> for more information about a command.**',
+      '**Use =help <Category> for more information about a category.**\n' + '**Use =help <Command> for more information about a command.**',
     )
 
     await message.channel.send(richEmbed).catch(commandLog.error)

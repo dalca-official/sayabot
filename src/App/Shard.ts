@@ -2,16 +2,16 @@
 import * as fs from 'fs'
 import * as Discord from 'discord.js'
 import { join } from 'path'
-import { EventEmitter } from 'events'
 
 import * as pkg from 'package.json'
 import * as config from '@/Config/Config.json'
 import * as env from '@/Config/Constant.json'
+import { Command } from '@/App/Structures/Command'
+import { EventManager } from '@/App/Modules/EventManager'
 import { Console } from '@/Tools'
 
 import { IDiscordInstance, IDiscordActivity } from '&types/App'
 import { intergralMessageTypes } from '&types/Command'
-import { Command } from '@/App/Structures/Command'
 
 // Set shard process title (shown in 'qs')
 process.title = `${env.botName} v${pkg.version} - ${process.pid}`
@@ -19,13 +19,11 @@ process.title = `${env.botName} v${pkg.version} - ${process.pid}`
 const { SHARD_ID: shardId, SHARDS_COUNT: shardCount } = process.env
 const shardLog = Console('[Shard]')
 
-const EventManager = new EventEmitter()
-
 class Shard {
   private readonly shardId = Number.parseInt(<string>shardId, 10)
   private readonly shards = Number.parseInt(<string>shardCount, 10)
   private instance: IDiscordInstance
-  private readonly eventManager: EventEmitter = EventManager
+  private readonly eventManager = new EventManager()
 
   public constructor() {
     this.isExistsShard()
