@@ -9,11 +9,12 @@
   "author": "Sayakie <proxy@sayakie.com> (https://sayakie.com)",
   "contributors": [],
   "engines": {
-    "node": ">= 10.13.0"
+    "node": ">= 8"
   },
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register src/App/index.ts",
-    "dev": "nodemon --watch ./src/ --exec ts-node -r tsconfig-paths/register src/App/index.ts --dev"
+    "dev": "nodemon --watch ./src/ --exec ts-node -r tsconfig-paths/register src/App/index.ts --dev",
+    "dev2": "ts-node -r tsconfig-paths/register src/App/index.ts --dev"
   },
   "dependencies": {
     "discord.js": "^11.4.2",

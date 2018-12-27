@@ -9,12 +9,11 @@ import { intergralMessageTypes } from '&types/Command'
 
 const commandLog = Console('[Command]')
 
-class Help extends Command {
+class Info extends Command {
   constructor() {
     super()
 
-    this.cmds = 'help'
-    this.aliases = ['h', 'commands', 'cmds']
+    this.cmds = 'info'
     this.description = 'Print all helps for Sayabots'
     this.group = 'generic'
     this.hide()
@@ -27,7 +26,7 @@ class Help extends Command {
     const commandsText: string[] = []
 
     commands.map(cmd => {
-      const command = <Help>(<unknown>this.instance.commandsExcludeAliases.get(cmd))
+      const command = <any>(<unknown>this.instance.commandsExcludeAliases.get(cmd))
 
       if (command.hidden) {
         return
@@ -54,4 +53,4 @@ class Help extends Command {
   }
 }
 
-export default new Help()
+export default new Info()

@@ -1,10 +1,11 @@
 // src > App > Commands > Music > music.Command.ts
 import * as Discord from 'discord.js'
-import * as Youtube from 'simple-youtube-api'
+// @ts-ignore
+import * as YouTube from 'simple-youtube-api'
 import * as ytdl from 'ytdl-core'
 
 import * as config from '@/Config/Config.json'
-import { Command } from '@/App/Structures/Command'
+import { Command } from '@/App/Structures/Command.Structure'
 import { Console } from '@/Tools'
 
 const commandLog = Console('[Command]')
@@ -23,7 +24,7 @@ interface IQueueConstruct {
 class Music extends Command {
   private queue = new Map()
   private voiceChannel: Discord.VoiceChannel
-  private readonly youtube = new Youtube(config.youtubeAPI)
+  private readonly youtube = new YouTube(config.youtubeAPI)
 
   constructor() {
     super()
@@ -76,7 +77,7 @@ class Music extends Command {
       const videos = await playlist.getVideos()
 
       videos.map(async (video: any) => {
-        const vid = await this.youtube.getVideoById(video.id)
+        const vid = await this.youtube.getVideoByID(video.id)
         await this.handleVideo(vid, true)
       })
 
@@ -93,7 +94,7 @@ class Music extends Command {
           let index = 0
           this.message.channel.send(`
 __**Song selection:**__
-${videos.map((video2: any) => `**${++index} -** ${video2.title}`).join('\n')}
+${videos.map(video2 => `**${++index} -** ${video2.title}`).join('\n')}
 Please provide a value to select one of the search results ranging from 1-10.
         `)
           try {
@@ -109,6 +110,7 @@ Please provide a value to select one of the search results ranging from 1-10.
           }
           // tslint:disable-next-line:radix
           const videoIndex = parseInt(response.first().content)
+          // @ts-ignore
           video = await this.youtube.getVideoByID(videos[videoIndex - 1].id)
         } catch (err) {
           commandLog.error(err)

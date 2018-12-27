@@ -1,5 +1,5 @@
 // src > App > Commands > Generic > prune.Command.ts
-import { Command } from '@/App/Structures/Command'
+import { Command } from '@/App/Structures/Command.Structure'
 import { Console } from '@/Tools'
 
 import { intergralMessageTypes } from '&types/Command'

@@ -1,5 +1,5 @@
 // src > App > Commands > Generic > ping.Command.ts
-import { Command } from '@/App/Structures/Command'
+import { Command } from '@/App/Structures/Command.Structure'
 import { Console } from '@/Tools'
 
 import { intergralMessageTypes } from '&types/Command'
@@ -20,10 +20,12 @@ class Ping extends Command {
 
     await message.channel
       .send('Ping?')
-      .then((msg: intergralMessageTypes) => {
-        const Latency = msg.createdTimestamp - message.createdTimestamp
-        msg.edit(`Pong!\nLatency is ${Latency}ms. API Latency is ${Math.round(this.instance.ping)}ms.`)
-      })
+      .then(
+        async (msg: any): Promise<void> => {
+          const Latency = msg.createdTimestamp - message.createdTimestamp
+          await msg.edit(`Pong!\nLatency is ${Latency}ms. API Latency is ${Math.round(this.instance.ping)}ms.`)
+        },
+      )
       .catch(commandLog.error)
   }
 }

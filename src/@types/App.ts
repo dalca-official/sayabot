@@ -3,6 +3,8 @@ import * as Discord from 'discord.js'
 import * as Cluster from 'cluster'
 import { ChildProcess } from 'child_process'
 
+export interface ClusterOptions
+
 export type IConfig = Readonly<{
   path: string
 }>

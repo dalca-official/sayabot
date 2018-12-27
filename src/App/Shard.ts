@@ -6,7 +6,7 @@ import { join } from 'path'
 import * as pkg from 'package.json'
 import * as config from '@/Config/Config.json'
 import * as env from '@/Config/Constant.json'
-import { Command } from '@/App/Structures/Command'
+import { Command } from '@/App/Structures/Command.Structure'
 import { EventManager } from '@/App/Modules/EventManager'
 import { Console } from '@/Tools'
 
@@ -16,7 +16,7 @@ import { intergralMessageTypes } from '&types/Command'
 // Set shard process title (shown in 'qs')
 process.title = `${env.botName} v${pkg.version} - ${process.pid}`
 
-const { SHARD_ID: shardId, SHARDS_COUNT: shardCount } = process.env
+const { SHARD_ID: shardId, SHARD_COUNT: shardCount } = process.env
 const shardLog = Console('[Shard]')
 
 class Shard {
@@ -55,6 +55,7 @@ class Shard {
   }
 
   private readonly walkSync = (dir: string, fileLikeArray: string[] = []): string[] => {
+    // @see https://gist.github.com/kethinov/6658166
     const files = fs.readdirSync(dir)
 
     files.map(file => {
@@ -77,6 +78,7 @@ class Shard {
   }
 
   private readonly abbrNum = (num: number, decPlaces: number): string => {
+    // @see https://stackoverflow.com/questions/2685911/is-there-a-way-to-round-numbers-into-a-reader-friendly-format-e-g-1-1k
     // @see https://en.wikipedia.org/wiki/Metric_prefix
     let strNum = String(num).length
     decPlaces = Math.pow(10, decPlaces)
@@ -112,6 +114,7 @@ class Shard {
   private readonly bindEvent = (): void => {
     this.instance.on('ready', () => this.readyClient())
     this.instance.on('message', (message: intergralMessageTypes) => this.onMessage(message))
+    this.instance.on('guildCreate', this.guildCreate)
     this.instance.on('guildMemberAdd', member => {
       shardLog.log(`User ${member.user.username} has joined the server.`)
 
@@ -182,6 +185,21 @@ class Shard {
     } finally {
       shardLog.log(`${message.author.tag} run the full scripts: ${message}`)
     }
+  }
+
+  private readonly guildCreate = async (guild: Discord.Guild): Promise<void> => {
+    const countBots = () => {
+      let bots = 0
+
+      guild.members.map(member => {
+        if (member.user.bot) ++bots
+      })
+
+      return bots
+    }
+
+    shardLog.log(`I've joined ${guild.name}, has ${countBots()} bots, ${guild.members.size - countBots()} users.`)
+    guild.defaultChannel.sendMessage('HiHi!')
   }
 
   private readonly send = (cmd: string): void => {

@@ -1,4 +1,4 @@
-// src > App > Config > index.ts
+// src > Config > index.ts
 import * as dotEnv from 'dotenv'
 import { Console } from '@/Tools'
 

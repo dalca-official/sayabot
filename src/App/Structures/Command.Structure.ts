@@ -1,4 +1,4 @@
-// src > App > Structures > Command.ts
+// src > App > Structures > Command.Structure.ts
 import { IDiscordInstance } from '&types/App'
 import { intergralMessageTypes } from '&types/Command'
 

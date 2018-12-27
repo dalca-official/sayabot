@@ -7,6 +7,7 @@ import * as pkg from 'package.json'
 import * as env from '@/Config/Constant.json'
 import { Config } from '@/Config'
 import { Console } from '@/Tools'
+import { Process } from '@/App/Utils/Process.Util'
 
 import { ICluster } from '&types/App'
 
@@ -41,7 +42,7 @@ coreLog.log(`The minimum supported Node.js version is ${env.minSuppportNodeVersi
 coreLog.log(`The host's node version is ${NODE_VERSION}`)
 
 // Set master process title
-process.title = `${env.botName} v${pkg.version}`
+Process.setTitle(`${env.botName} v${pkg.version}`)
 
 // set environment
 const isDevelopment = process.argv.slice(2)[0] === '--dev'
@@ -60,7 +61,7 @@ shardLog.log('Initialise the shards')
 const clusters = env.useCluster ? NUM_WORKERS : 1
 
 for (let clusterId = 0; clusterId < clusters; clusterId++) {
-  const WORKER_ENV = { SHARD_ID: clusterId, SHARDS_COUNT: clusters }
+  const WORKER_ENV = { SHARD_ID: clusterId, SHARD_COUNT: clusters }
 
   const Worker = Cluster.fork(WORKER_ENV)
   Worker.on('message', command => process.emit(command))
@@ -77,7 +78,9 @@ Cluster.on('exit', (worker: ICluster, exitCode: number) => {
 })
 
 // Bind events for the master
-process.on('unhandledRejection', reason => coreLog.error(`Unhandled rejection: ${reason}`))
+process.on('uncaughtException', err => coreLog.error(`Caught exception: ${err.stack}`))
+process.on('unhandledRejection', (reason, p) => coreLog.error(`Unhandled rejection at: ${p} bzc of ${reason}`))
+process.on('exit', code => shardLog.log(`Exited with code ${code}`))
 process.on('SIGTERM', closeCluster)
 process.on('SIGINT', closeCluster)
 process.on(<NodeJS.Signals>'DISCONENECTED', () => process.exit(0))
